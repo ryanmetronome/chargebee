@@ -7181,6 +7181,28 @@
                 'contains the name given for the API key used.' }
       ]
     end,
+    invoice_charge_create_input: lambda do |_input|
+        [
+          { name: 'customer_id', sticky: true,
+            hint: 'Identifier of the customer for which this invoice needs to be created. ' \
+                  'Should be specified if subscription_id is not specified.' },
+          { name: 'subscription_id', sticky: true,
+            hint: 'Identifier of the subscription for which this invoice needs to be created. ' \
+                  'Should be specified if customer_id is not specified.(not applicable ' \
+                  'for consolidated invoice).' },
+          { name: 'amount', sticky: true, 
+            hint: 'The amount to be charged in cents, min=1. The unit depends on the type of currency.',
+            type: 'number', control_type: 'number', 
+            label: 'Amount (in cents)' },
+          { name: 'date_from', sticky: true, type: 'date_time', control_type: 'date_time',
+            convert_input: 'render_epoch_time', convert_output: 'render_iso8601_timestamp',
+            label: 'Date from' },
+          { name: 'date_to', sticky: true, type: 'date_time', control_type: 'date_time',
+            convert_input: 'render_epoch_time', convert_output: 'render_iso8601_timestamp',
+            label: 'Date to' },
+          { name: 'description', sticky: true}
+        ]
+    end,
     invoice_create_input: lambda do |_input|
       call('invoice_schema', '').ignored('id', 'notes').
         concat([
@@ -7706,6 +7728,9 @@
       ]
     end,
     invoice_create_output: lambda do |_input|
+      call('invoice_schema', '')
+    end,
+    invoice_charge_create_output: lambda do |_input|
       call('invoice_schema', '')
     end,
     hierarchy_access_setting_update_input: lambda do |_input|
@@ -9809,6 +9834,8 @@
                      post("customers/#{input.delete('customer_id')}/subscriptions").params(input.except('object', 'schema_builder'))
                    elsif input['object'] == 'quote_for_update_subscription_item'
                      post('quotes/update_subscription_quote_for_items').params(input.except('object', 'schema_builder'))
+                   elsif input['object'] == 'invoice_charge'
+                    post('invoices/charge').params(input.except('object', 'schema_builder')).headers('Content-Type': 'application/x-www-form-urlencoded')
                    else
                      post(input['object'].pluralize).params(input.except('object', 'schema_builder')).headers('Content-Type': 'application/x-www-form-urlencoded')
                    end&.
@@ -10417,7 +10444,7 @@
     end,
     create_object_list: lambda do |_connection|
       %w[customer subscription_for_customer subscription_for_item
-         credit_note invoice quote_for_update_subscription_item comment].
+         credit_note invoice invoice_charge quote_for_update_subscription_item comment].
         map { |e| [e.labelize, e] }
     end,
     update_object_list: lambda do |_connection|
@@ -10880,5 +10907,6 @@
     end
   }
 }
+
 
 
