@@ -7302,7 +7302,7 @@
                      concat([
                               { name: 'tmp_token', label: 'Temporary token' }
                             ]) },
-                 { name: 'charge', label: 'Charges', type: 'array', of: 'object',
+                 { name: 'charges', label: 'Charges', type: 'array', of: 'object',
                    properties: [
                      { name: 'amount',
                        type: 'integer',
@@ -9810,7 +9810,7 @@
                    elsif input['object'] == 'quote_for_update_subscription_item'
                      post('quotes/update_subscription_quote_for_items').params(input.except('object', 'schema_builder'))
                    else
-                     post(input['object'].pluralize).params(input.except('object', 'schema_builder'))
+                     post(input['object'].pluralize).params(input.except('object', 'schema_builder')).headers('Content-Type': 'application/x-www-form-urlencoded')
                    end&.
                    after_error_response(/.*/) do |_code, body, _header, message|
                      error("#{message}: #{body}")
@@ -9818,6 +9818,7 @@
         if %w[subscription_for_item subscription_for_customer].include?(input['object'])
           input['object'] = 'subscription'
         end
+        puts response
         response[input['object']]&.merge(response.except(input['object']))
       end,
       output_fields: lambda do |object_definitions|
@@ -10879,4 +10880,5 @@
     end
   }
 }
+
 
