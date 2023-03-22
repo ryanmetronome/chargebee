@@ -9110,7 +9110,7 @@
             'override this base URI.',
             optional: false
           },
-          if %w[post put patch].include?(verb)
+          if %w[post put patch get].include?(verb)
             {
               name: 'request_type',
               default: 'json',
@@ -9133,24 +9133,6 @@
             control_type: 'select',
             pick_list: [['JSON response', 'json'], ['Raw response', 'raw']]
           },
-          if %w[get options delete].include?(verb)
-            {
-              name: 'input',
-              label: 'Request URL parameters',
-              sticky: true,
-              add_field_label: 'Add URL parameter',
-              control_type: 'form-schema-builder',
-              type: 'object',
-              properties: [
-                {
-                  name: 'schema',
-                  sticky: input_schema.blank?,
-                  extends_schema: true
-                },
-                input_data
-              ].compact
-            }
-          else
             {
               name: 'input',
               label: 'Request body parameters',
@@ -9191,8 +9173,7 @@
                     input_data
                   ].compact
                 end
-            }
-          end,
+            },
           {
             name: 'request_headers',
             sticky: false,
@@ -9845,7 +9826,6 @@
         if %w[subscription_for_item subscription_for_customer].include?(input['object'])
           input['object'] = 'subscription'
         end
-        puts response
         response[input['object']]&.merge(response.except(input['object']))
       end,
       output_fields: lambda do |object_definitions|
